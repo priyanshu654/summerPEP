@@ -1,49 +1,86 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function Login() {
+function Login({updateUserDetails}) {
+  const [formData, setFormData] = useState({
+    username: "",
+    password: ""
+  });
+  const navigate = useNavigate();
+  const handleChange = (e) => {
+    const name = e.target.name;
+    const value = e.target.value;
 
-const [formData,setFormData]=useState({
-    username:"",
-    password:""
-})
+    setFormData({ ...formData, [name]: value });
+  };
 
+  const [err, setErr] = useState({});
+  const [msg, setMsg] = useState({});
 
-const handleChange=(e)=>{
-    const name=e.target.name;
-    const value=e.target.value;
+  const validate = () => {
+    const errors = {};
+    const messages = {};
+    const { username, password } = formData;
 
-    setFormData({...formData,[name]:value});
-};
+    if (username.trim() === "") {
+      errors.username = "Username is required";
+    }
+    if (password.trim() === "") {
+      errors.password = "Password is required";
+    }
 
-const [err,setErr]=useState({});
-cons [msg,setMsg]=useState({});
+    // Hardcoded login check
+    if (username === "admin" && password === "1234") {
+      updateUserDetails({
+        username:"admin",
+        password:"1234"
+      })
+      messages.success = "Login successful!";
+    } else if (username && password && (username !== "admin" || password !== "1234")) {
+      errors.invalid = "Invalid credentials";
+    }
 
+    setErr(errors);
+    setMsg(messages);
 
+    return Object.keys(errors).length === 0;
+  };
 
-const handleSubmit=(e)=>{
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if(validate){
-
+    if (validate()) {
+      console.log("User logged in successfully");
+      navigate("/dashboard");
     }
-}
-
-
-
-
+  };
 
   return (
     <div>
       <h2>Login Page</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email:</label>
-          <input type="email" name='username'required onChange={handleChange} value={formData.username}/>
+          <label>Username:</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+          />
+          {err.username && <p style={{ color: "red" }}>{err.username}</p>}
         </div>
         <div>
           <label>Password:</label>
-          <input type="password" name='password'required onChange={handleChange} value={formData.value}/>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          {err.password && <p style={{ color: "red" }}>{err.password}</p>}
         </div>
+        {err.invalid && <p style={{ color: "red" }}>{err.invalid}</p>}
+        {msg.success && <p style={{ color: "green" }}>{msg.success}</p>}
         <button type="submit">Login</button>
       </form>
     </div>
